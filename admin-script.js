@@ -82,14 +82,44 @@ function atualizarCorCard(input) {
  })
 
 // 5. Integração REAL com o Back-end no RENDER
-const API_URL = "https://repositorio-render-ck8j.onrender.com"; // Seu novo endereço oficial
+const API_URL = "https://repositorio-render-ck8j.onrender.com";
 
-async function salvarAlteracoesNoBanco() {
+// Função para BUSCAR dados ao carregar a página
+async function carregarDadosDoBanco() {
     const statusDb = document.getElementById('db-status');
     const ponto = document.querySelector('.ponto-conexao');
 
-    statusDb.innerText = "Salvando no Banco...";
+    try {
+        statusDb.innerText = "Sincronizando...";
+        const resposta = await fetch(`${API_URL}/estoque`);
+        
+        if (resposta.ok) {
+            const dados = await resposta.json();
+            
+            // Se houver dados no banco, atualiza os inputs da tela
+            dados.forEach(item => {
+                const card = document.querySelector(`[data-sabor="${item.sabor}"]`);
+                if (card) {
+                    const input = card.querySelector('.input-estoque');
+                    input.value = item.quantidade;
+                    atualizarCorCard(input); // Atualiza a cor (verde/amarelo/vermelho)
+                }
+            });
 
+            statusDb.innerText = "Sincronizado";
+            ponto.style.background = "#2ecc71"; // FICA VERDE AQUI!
+        }
+    } catch (err) {
+        statusDb.innerText = "Erro de Conexão";
+        ponto.style.background = "#ff4d4d";
+        console.error("Servidor ainda está acordando ou link errado.");
+    }
+}
+
+// 6. Função para SALVAR (Já existente, mas otimizada)
+async function salvarAlteracoesNoBanco() {
+    const statusDb = document.getElementById('db-status');
+    const ponto = document.querySelector('.ponto-conexao');
     const cards = document.querySelectorAll('.card-produto');
     const listaParaEnviar = [];
 
@@ -100,7 +130,6 @@ async function salvarAlteracoesNoBanco() {
     });
 
     try {
-        // Agora o fetch aponta para o endereço REAL na internet
         const resposta = await fetch(`${API_URL}/atualizar-estoque`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -109,14 +138,13 @@ async function salvarAlteracoesNoBanco() {
 
         if (resposta.ok) {
             statusDb.innerText = "Sincronizado";
-            ponto.style.background = "#2ecc71"; 
-            console.log("✅ Dados gravados no Render com sucesso!");
-        } else {
-            throw new Error();
+            ponto.style.background = "#2ecc71";
         }
     } catch (err) {
-        statusDb.innerText = "Erro de Conexão";
-        ponto.style.background = "#ff4d4d"; 
-        console.error("❌ Erro ao conectar com o Render. O link está correto?");
+        statusDb.innerText = "Erro ao Salvar";
+        ponto.style.background = "#ff4d4d";
     }
 }
+
+// EXECUTA AUTOMATICAMENTE AO ABRIR A PÁGINA
+carregarDadosDoBanco();
