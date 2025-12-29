@@ -82,7 +82,7 @@ function atualizarCorCard(input) {
  })
 
 // 5. Integração REAL com o Back-end no RENDER
-const API_URL = "https://repositorio-render-ck8j.onrender.com";
+const API_URL = "https://repositorio-render-ckey.onrender.com";
 
 // Função para BUSCAR dados ao carregar a página
 async function carregarDadosDoBanco() {
