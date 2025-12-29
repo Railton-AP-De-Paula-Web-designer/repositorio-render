@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css"> 
+    <title>Gestão de Estoque - Distribuidora Vitória</title>
+</head>
+<body>
+    <header class="adm-header">
+        <div class="info-loja">
+            <h1>Gestão de Estoque</h1>
+            <p>Distribuidora Vitória - Sorvetes</p>
+        </div>
+
+        <div class="trava-container">
+            <button id="btn-trava" class="bloqueado">
+                <span class="icone-cadeado">🔒</span>
+                <span class="texto-trava">SISTEMA BLOQUEADO</span>
+            </button>
+            <p class="instrução-trava">Clique 3 vezes para liberar edição</p>
+        </div>
+    </header>
+
+    <main class="dashboard-estoque">
+        <section id="grid-produtos" class="grid-container">
+
+            <article class="card-produto status-vazio" data-sabor="Abacaxi">
+                <h3 class="sabor-nome">Abacaxi</h3>
+                <div class="input-grupo">
+                    <label for="est-abacaxi">Estoque Atual</label>
+                    <input type="number" id="est-abacaxi" class="input-estoque" value="0" min="0" disabled>
+                </div>
+                <div class="indicador-status">Status: Sincronizando...</div>
+            </article>
+
+            <article class="card-produto status-vazio" data-sabor="Chocolate">
+                <h3 class="sabor-nome">Chocolate</h3>
+                <div class="input-grupo">
+                    <label for="est-choc">Estoque Atual</label>
+                    <input type="number" id="est-choc" class="input-estoque" value="0" min="0" disabled>
+                </div>
+                <div class="indicador-status">Status: Sincronizando...</div>
+            </article>
+
+        </section>
+    </main>
+
+    <footer class="admin-footer">
+        <div class="status-banco">
+            <span class="ponto-conexao"></span> Banco de Dados: <span id="db-status">Aguardando...</span>
+        </div>
+    </footer>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
