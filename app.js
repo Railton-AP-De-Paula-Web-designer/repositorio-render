@@ -1,60 +1,50 @@
-import express from 'express';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const cors = require('cors'); // Ativando a permissão de segurança
 const app = express();
+const port = process.env.PORT || 10000;
+
+// Configurações Iniciais
+app.use(cors()); // Libera o acesso para o seu GitHub Pages
 app.use(express.json());
-// Isso permite que o navegador encontre seus arquivos HTML/CSS na pasta atual
-app.use(express.static('./')); 
 
-// Função para abrir o banco sempre que precisar
-async function conectarBanco() {
-    return open({
-        filename: './banco.db',
-        driver: sqlite3.Database
-    });
-}
-
-// 1. Lógica Inicial (Cria a tabela e valores iniciais ao ligar o servidor)
-async function inicializarSistema() {
-    const db = await conectarBanco();
-    await db.run(`
-        CREATE TABLE IF NOT EXISTS estoque (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            sabor TEXT UNIQUE, 
+// Configuração do Banco de Dados SQLite (4 KB de poder!)
+const db = new sqlite3.Database('./banco.db', (err) => {
+    if (err) {
+        console.error("❌ Erro ao abrir banco:", err.message);
+    } else {
+        console.log("✅ Banco de Dados Pronto.");
+        db.run(`CREATE TABLE IF NOT EXISTS estoque (
+            sabor TEXT PRIMARY KEY,
             quantidade INTEGER
-        )
-    `);
-    console.log("✅ Banco de Dados Pronto.");
-    await db.close();
-}
-
-// 2. ROTA DE ATUALIZAÇÃO (O "Ouvidor" para a Página B)
-app.post('/atualizar-estoque', async (req, res) => {
-    const listaProdutos = req.body; 
-    const db = await conectarBanco();
-
-    try {
-        for (const item of listaProdutos) {
-            await db.run(
-                `INSERT OR REPLACE INTO estoque (sabor, quantidade) VALUES (?, ?)`,
-                [item.sabor, item.quantidade]
-            );
-        }
-        console.log("📊 Estoque atualizado via Página B");
-        res.status(200).send({ mensagem: "Sincronizado!" });
-    } catch (e) {
-        res.status(500).send({ erro: e.message });
-    } finally {
-        await db.close();
+        )`);
     }
 });
 
-// O comando process.env.PORT tenta pegar a porta do servidor online
-// Se não encontrar (no caso do seu PC), ele usa a 3000 automaticamente
-const PORT = process.env.PORT || 3000;
+// Rota para buscar o estoque
+app.get('/estoque', (req, res) => {
+    db.all("SELECT * FROM estoque", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
 
-app.listen(PORT, async () => {
-    await inicializarSistema();
-    console.log(`🚀 Servidor rodando! No seu PC acesse: http://localhost:${PORT}`);
+// Rota para salvar o estoque (Página B usa esta aqui)
+app.post('/atualizar-estoque', (req, res) => {
+    const listaProdutos = req.body;
+    
+    db.serialize(() => {
+        const stmt = db.prepare("INSERT OR REPLACE INTO estoque (sabor, quantidade) VALUES (?, ?)");
+        listaProdutos.forEach(item => {
+            stmt.run(item.sabor, item.quantidade);
+        });
+        stmt.finalize((err) => {
+            if (err) return res.status(500).json({ success: false });
+            res.json({ success: true });
+        });
+    });
+});
+
+app.listen(port, () => {
+    console.log(`🚀 Servidor rodando! No seu PC acesse: http://localhost:${port}`);
 });
