@@ -81,14 +81,15 @@ function atualizarCorCard(input) {
     })
  })
 
-// 5. Integração REAL com o Back-end (app.js)
+// 5. Integração REAL com o Back-end no RENDER
+const API_URL = "https://repositorio-render-ck8j.onrender.com"; // Seu novo endereço oficial
+
 async function salvarAlteracoesNoBanco() {
     const statusDb = document.getElementById('db-status');
     const ponto = document.querySelector('.ponto-conexao');
 
     statusDb.innerText = "Salvando no Banco...";
 
-    // Pegamos todos os cards para enviar os dados atuais
     const cards = document.querySelectorAll('.card-produto');
     const listaParaEnviar = [];
 
@@ -99,8 +100,8 @@ async function salvarAlteracoesNoBanco() {
     });
 
     try {
-        // Envia para o servidor que você configurou no app.js
-        const resposta = await fetch('/atualizar-estoque', {
+        // Agora o fetch aponta para o endereço REAL na internet
+        const resposta = await fetch(`${API_URL}/atualizar-estoque`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(listaParaEnviar)
@@ -108,14 +109,14 @@ async function salvarAlteracoesNoBanco() {
 
         if (resposta.ok) {
             statusDb.innerText = "Sincronizado";
-            ponto.style.background = "#2ecc71"; // Verde conectado
-            console.log("✅ Dados gravados no banco.db com sucesso!");
+            ponto.style.background = "#2ecc71"; 
+            console.log("✅ Dados gravados no Render com sucesso!");
         } else {
             throw new Error();
         }
     } catch (err) {
         statusDb.innerText = "Erro de Conexão";
-        ponto.style.background = "#ff4d4d"; // Vermelho erro
-        console.error("❌ O servidor (app.js) está desligado?");
+        ponto.style.background = "#ff4d4d"; 
+        console.error("❌ Erro ao conectar com o Render. O link está correto?");
     }
 }
